@@ -56,27 +56,46 @@ contract EWCertificationCenter is owned {
     string public description;
     string public place;
     
-    mapping (address => bool) courses;
+    mapping (address => bool) public validCertificators;
+    
+    mapping (address => bool) public validCourses;
+    
+    modifier onlyValidCertificator {
+        require(validCertificators[msg.sender]);
+        _;
+    }
+
     
     function EWCertificationCenter (string _name, string _description, string _place) {
     
         name = _name;
         description = _description;
         place = _place;
+        validCertificators[msg.sender]=true;
         
     }
     
+    // add and delete certificator 
+    function addCertificator(address newCertificator) onlyOwner {
+        validCertificators[newCertificator] = true;
+    }
+    
+    function deleteCertificator(address certificator) onlyOwner {
+        validCertificators[certificator] = false;
+    }
+    
+    // add and delete cource certificate
     function addCourse(address courseAddess) onlyOwner {
-        courses[courseAddess] = true;
+        validCourses[courseAddess] = true;
     }
 
     function deleteCourse(address courseAddess) onlyOwner {
-        courses[courseAddess] = false;
+        validCourses[courseAddess] = false;
     }
     
-    function issueSertificate(address courseAddess, address student) onlyOwner {
+    function issueSertificate(address courseAddess, address student) onlyValidCertificator {
         require (student != 0x0);
-        require (courses[courseAddess]);
+        require (validCourses[courseAddess]);
         
         StandardCertificate s = StandardCertificate(courseAddess);
         s.issue(student);
@@ -84,15 +103,15 @@ contract EWCertificationCenter is owned {
     
     function checkSertificate(address courseAddess, address student) constant returns (uint) {
         require (student != 0x0);
-        require (courses[courseAddess]);
+        require (validCourses[courseAddess]);
         
         StandardCertificate s = StandardCertificate(courseAddess);
         return s.issued(student);        
     }
     
-    function annulCertificate(address courseAddess, address student) onlyOwner {
+    function annulCertificate(address courseAddess, address student) onlyValidCertificator {
         require (student != 0x0);
-        require (courses[courseAddess]);
+        require (validCourses[courseAddess]);
 
         StandardCertificate s = StandardCertificate(courseAddess);
         s.annul(student);
