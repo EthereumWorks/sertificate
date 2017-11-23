@@ -86,6 +86,7 @@ contract EWCertificationCenter is owned {
     
     // add and delete cource certificate
     function addCourse(address courseAddess) onlyOwner {
+        StandardCertificate s = StandardCertificate(courseAddess);
         validCourses[courseAddess] = true;
     }
 
@@ -115,6 +116,11 @@ contract EWCertificationCenter is owned {
 
         StandardCertificate s = StandardCertificate(courseAddess);
         s.annul(student);
+    }
+    
+    function changeOwnership(address certificateAddress, address newOwner) onlyOwner {
+        StandardCertificate s = StandardCertificate(certificateAddress);
+        s.transferOwnership(newOwner);
     }
     
 }
