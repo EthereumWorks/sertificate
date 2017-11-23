@@ -17,7 +17,7 @@ contract owned {
     }
 }
 
-contract StandardSertificate is owned{
+contract StandardCertificate is owned{
     
     string public name;
     string public description;
@@ -25,9 +25,9 @@ contract StandardSertificate is owned{
     string public place;
     uint public hoursCount;
     
-    mapping (address => uint) sertificates;
+    mapping (address => uint) certificates;
     
-    function StandardSertificate (string _name, string _description, string _language, string _place, uint _hoursCount) {
+    function StandardCertificate (string _name, string _description, string _language, string _place, uint _hoursCount) {
         name = _name;
         description = _description;
         language = _language;
@@ -37,16 +37,20 @@ contract StandardSertificate is owned{
     
     // выдача сертификата
     function issue (address student) onlyOwner {
-        sertificates[student] = now;
+        certificates[student] = now;
     }
     
     function issued (address student)  constant returns (uint) {
-        return sertificates[student];
+        return certificates[student];
+    }
+    
+    function annul (address student) onlyOwner {
+        certificates[student] = 0;
     }
     
 }
 
-contract EWSertificationCenter is owned {
+contract EWCertificationCenter is owned {
     
     string public name;
     string public description;
@@ -54,7 +58,7 @@ contract EWSertificationCenter is owned {
     
     mapping (address => bool) courses;
     
-    function EWSertificationCenter (string _name, string _description, string _place) {
+    function EWCertificationCenter (string _name, string _description, string _place) {
     
         name = _name;
         description = _description;
@@ -74,7 +78,7 @@ contract EWSertificationCenter is owned {
         require (student != 0x0);
         require (courses[courseAddess]);
         
-        StandardSertificate s = StandardSertificate(courseAddess);
+        StandardCertificate s = StandardCertificate(courseAddess);
         s.issue(student);
     }
     
@@ -82,7 +86,16 @@ contract EWSertificationCenter is owned {
         require (student != 0x0);
         require (courses[courseAddess]);
         
-        StandardSertificate s = StandardSertificate(courseAddess);
+        StandardCertificate s = StandardCertificate(courseAddess);
         return s.issued(student);        
     }
+    
+    function annulCertificate(address courseAddess, address student) onlyOwner {
+        require (student != 0x0);
+        require (courses[courseAddess]);
+
+        StandardCertificate s = StandardCertificate(courseAddess);
+        s.annul(student);
+    }
+    
 }
